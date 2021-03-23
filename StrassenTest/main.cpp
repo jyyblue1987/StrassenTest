@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 using namespace std; 
-typedef long long lld; 
+typedef int lld; 
   
 /* Strassen's Algorithm for matrix multiplication 
    Complexity:    O(n^2.808) */
@@ -12,17 +12,36 @@ inline lld** MatrixMultiply(lld** a, lld** b, int n,
     lld** c = new lld*[n]; 
     for (int i = 0; i < n; i++) 
         c[i] = new lld[m]; 
+
+	lld sum = 0;
   
     for (int i = 0; i < n; i++) { 
         for (int j = 0; j < m; j++) { 
-            c[i][j] = 0; 
-            for (int k = 0; k < l; k++) { 
-                c[i][j] += a[i][k] * b[k][j]; 
-            } 
+            sum = 0; 
+            for (int k = 0; k < l; k++)
+                sum += a[i][k] * b[k][j]; 
+			c[i][j] = sum; 
         } 
     } 
     return c; 
 } 
+
+lld** AllocMatrix(int n, int m)
+{
+	lld *x = new lld[n * m];
+	lld **p = new lld*[n];
+
+	for(int i = 0; i < n; i++)
+		p[i] = x + i * m;
+
+	return p;
+}
+
+void FreeMatrix(lld **p)
+{
+	delete p[0];
+	delete p;
+}
   
 inline lld** Strassen(lld** a, lld** b, int n,  
                                 int l, int m) 
@@ -30,9 +49,7 @@ inline lld** Strassen(lld** a, lld** b, int n,
     if (n == 1 || l == 1 || m == 1)  
         return MatrixMultiply(a, b, n, l, m); 
 
-	lld** c = new lld*[n]; 
-	for (int i = 0; i < n; i++) 
-		c[i] = new lld[m]; 
+	lld** c = AllocMatrix(n, m);
 
 	int adjN = (n >> 1) + (n & 1); 
 	int adjL = (l >> 1) + (l & 1); 
@@ -42,9 +59,8 @@ inline lld** Strassen(lld** a, lld** b, int n,
 	for (int x = 0; x < 2; x++) { 
 		As[x] = new lld**[2]; 
 		for (int y = 0; y < 2; y++) { 
-			As[x][y] = new lld*[adjN]; 
+			As[x][y] = AllocMatrix(adjN, adjL);
 			for (int i = 0; i < adjN; i++) { 
-				As[x][y][i] = new lld[adjL]; 
 				for (int j = 0; j < adjL; j++) { 
 					int I = i + (x & 1) * adjN; 
 					int J = j + (y & 1) * adjL; 
@@ -57,10 +73,9 @@ inline lld** Strassen(lld** a, lld** b, int n,
 	lld**** Bs = new lld***[2]; 
 	for (int x = 0; x < 2; x++) { 
 		Bs[x] = new lld**[2]; 
-		for (int y = 0; y < 2; y++) { 
-			Bs[x][y] = new lld*[adjL]; 
-			for (int i = 0; i < adjL; i++) { 
-				Bs[x][y][i] = new lld[adjM]; 
+		for (int y = 0; y < 2; y++) { 			
+			Bs[x][y] = AllocMatrix(adjL, adjM);
+			for (int i = 0; i < adjL; i++) { 				
 				for (int j = 0; j < adjM; j++) { 
 					int I = i + (x & 1) * adjL; 
 					int J = j + (y & 1) * adjM; 
@@ -73,91 +88,81 @@ inline lld** Strassen(lld** a, lld** b, int n,
 	lld*** s = new lld**[10]; 
 	for (int i = 0; i < 10; i++) { 
 		switch (i) { 
-		case 0: 
-			s[i] = new lld*[adjL]; 
-			for (int j = 0; j < adjL; j++) { 
-				s[i][j] = new lld[adjM]; 
+		case 0: 			
+			s[i] = AllocMatrix(adjL, adjM);
+			for (int j = 0; j < adjL; j++) { 				
 				for (int k = 0; k < adjM; k++) { 
 					s[i][j][k] = Bs[0][1][j][k] - Bs[1][1][j][k]; 
 				} 
 			} 
 			break; 
-		case 1: 
-			s[i] = new lld*[adjN]; 
-			for (int j = 0; j < adjN; j++) { 
-				s[i][j] = new lld[adjL]; 
+		case 1: 			
+			s[i] = AllocMatrix(adjN, adjL);
+			for (int j = 0; j < adjN; j++) { 				
 				for (int k = 0; k < adjL; k++) { 
 					s[i][j][k] = As[0][0][j][k] + As[0][1][j][k]; 
 				} 
 			} 
 			break; 
-		case 2: 
-			s[i] = new lld*[adjN]; 
-			for (int j = 0; j < adjN; j++) { 
-				s[i][j] = new lld[adjL]; 
+		case 2: 			
+			s[i] = AllocMatrix(adjN, adjL);
+			for (int j = 0; j < adjN; j++) { 				
 				for (int k = 0; k < adjL; k++) { 
 					s[i][j][k] = As[1][0][j][k] + As[1][1][j][k]; 
 				} 
 			} 
 			break; 
 		case 3: 
-			s[i] = new lld*[adjL]; 
-			for (int j = 0; j < adjL; j++) { 
-				s[i][j] = new lld[adjM]; 
+			s[i] = AllocMatrix(adjL, adjM);
+			for (int j = 0; j < adjL; j++) { 				
 				for (int k = 0; k < adjM; k++) { 
 					s[i][j][k] = Bs[1][0][j][k] - Bs[0][0][j][k]; 
 				} 
 			} 
 			break; 
 		case 4: 
-			s[i] = new lld*[adjN]; 
-			for (int j = 0; j < adjN; j++) { 
-				s[i][j] = new lld[adjL]; 
+			s[i] = AllocMatrix(adjN, adjL);			
+			for (int j = 0; j < adjN; j++) { 				
 				for (int k = 0; k < adjL; k++) { 
 					s[i][j][k] = As[0][0][j][k] + As[1][1][j][k]; 
 				} 
 			} 
 			break; 
 		case 5: 
-			s[i] = new lld*[adjL]; 
-			for (int j = 0; j < adjL; j++) { 
-				s[i][j] = new lld[adjM]; 
+			s[i] = AllocMatrix(adjL, adjM);			
+			for (int j = 0; j < adjL; j++) { 				
 				for (int k = 0; k < adjM; k++) { 
 					s[i][j][k] = Bs[0][0][j][k] + Bs[1][1][j][k]; 
 				} 
 			} 
 			break; 
 		case 6: 
-			s[i] = new lld*[adjN]; 
+			s[i] = AllocMatrix(adjN, adjL);			
 			for (int j = 0; j < adjN; j++) { 
-				s[i][j] = new lld[adjL]; 
 				for (int k = 0; k < adjL; k++) { 
 					s[i][j][k] = As[0][1][j][k] - As[1][1][j][k]; 
 				} 
 			} 
 			break; 
 		case 7: 
-			s[i] = new lld*[adjL]; 
+			s[i] = AllocMatrix(adjL, adjM);			
 			for (int j = 0; j < adjL; j++) { 
-				s[i][j] = new lld[adjM]; 
 				for (int k = 0; k < adjM; k++) { 
 					s[i][j][k] = Bs[1][0][j][k] + Bs[1][1][j][k]; 
 				} 
 			} 
 			break; 
 		case 8: 
-			s[i] = new lld*[adjN]; 
+			s[i] = AllocMatrix(adjN, adjL);			
 			for (int j = 0; j < adjN; j++) { 
-				s[i][j] = new lld[adjL]; 
 				for (int k = 0; k < adjL; k++) { 
 					s[i][j][k] = As[0][0][j][k] - As[1][0][j][k]; 
 				} 
 			} 
 			break; 
-		case 9: 
-			s[i] = new lld*[adjL]; 
+		case 9: 			
+			s[i] = AllocMatrix(adjL, adjM);		
 			for (int j = 0; j < adjL; j++) { 
-				s[i][j] = new lld[adjM]; 
 				for (int k = 0; k < adjM; k++) { 
 					s[i][j][k] = Bs[0][0][j][k] + Bs[0][1][j][k]; 
 				} 
@@ -189,46 +194,29 @@ inline lld** Strassen(lld** a, lld** b, int n,
 
 	for (int x = 0; x < 2; x++) { 
 		for (int y = 0; y < 2; y++) { 
-			for (int i = 0; i < adjL; i++) { 
-				delete[] Bs[x][y][i]; 
-			} 
-			delete[] Bs[x][y]; 
+			FreeMatrix(Bs[x][y]);
 		} 
 		delete[] Bs[x]; 
 	} 
 	delete[] Bs;
 
-	for (int i = 0; i < 10; i++) { 
-		switch (i) { 
-		case 0: 
-		case 3: 
-		case 5: 
-		case 7: 
-		case 9: 
-			for (int j = 0; j < adjL; j++) { 
-				delete[] s[i][j]; 
-			} 
-			break; 
-		case 1: 
-		case 2: 
-		case 4: 
-		case 6: 
-		case 8: 
-			for (int j = 0; j < adjN; j++) { 
-				delete[] s[i][j]; 
-			} 
-			break; 
+	for (int x = 0; x < 2; x++) { 
+		for (int y = 0; y < 2; y++) { 
+			FreeMatrix(As[x][y]);
 		} 
-		delete[] s[i]; 
+		delete[] As[x]; 
+	} 
+	delete[] As;
+
+	for (int i = 0; i < 10; i++) { 
+		FreeMatrix(s[i]);
 	} 
 	delete[] s; 
 
 	for (int i = 0; i < 7; i++) { 
-		for (int j = 0; j < (n >> 1); j++) { 
-			delete[] p[i][j]; 
-		} 
-		delete[] p[i]; 
+		FreeMatrix(p[i]);
 	} 
+
 	delete[] p; 
    
     return c; 
@@ -240,15 +228,8 @@ int main(int argc, char *argv[])
 	{
 		int n = atoi(argv[2]);
 
-		lld** matA; 
-		matA = new lld*[n]; 
-		for (int i = 0; i < n; i++) 
-			matA[i] = new lld[n]; 
-
-		lld** matB; 
-		matB = new lld*[n]; 
-		for (int i = 0; i < n; i++) 
-			matB[i] = new lld[n]; 
+		lld** matA = AllocMatrix(n, n);
+		lld** matB = AllocMatrix(n, n);
 
 		// read file
 		char * line = NULL;
@@ -273,12 +254,9 @@ int main(int argc, char *argv[])
 		for(int i = 0; i < n; i++)
 			printf("%d\n", matC[i][i]);
 
-		for(int i = 0; i < n; i++)
-		{
-			delete matA[i];
-			delete matB[i];
-			delete matC[i];
-		}
+		FreeMatrix(matA);
+		FreeMatrix(matB);
+		FreeMatrix(matC);
 	}
 	else
 	{
