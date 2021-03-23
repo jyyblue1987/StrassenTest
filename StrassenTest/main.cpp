@@ -10,7 +10,7 @@ typedef int lld;
 /* Strassen's Algorithm for matrix multiplication 
    Complexity:    O(n^2.808) */
 
-#define N_0 2
+#define N_0 8
 lld** AllocMatrix(int n, int m)
 {
 	lld *x = new lld[n * m];
@@ -240,7 +240,7 @@ double T_N(double n, double p, double q);
 
 double T_N(double n, double p, double q) 
 {
-	if(n <= N_0)
+	if(n <= 2)
 		return p * n * n;
 
 	return 7 * T_N(n/2, p, q) + q * n * n;
