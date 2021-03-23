@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h> 
+
+
 using namespace std; 
 typedef int lld; 
   
@@ -12,6 +15,7 @@ lld** AllocMatrix(int n, int m)
 {
 	lld *x = new lld[n * m];
 	lld **p = new lld*[n];
+	memset(x, 0, sizeof(lld) * n * n);
 
 	for(int i = 0; i < n; i++)
 		p[i] = x + i * m;
@@ -62,16 +66,33 @@ inline lld** Strassen(lld** a, lld** b, int n,
 	int adjM = (m >> 1) + (m & 1); 
 
 	lld**** As = new lld***[2]; 
+	lld **A = NULL;
+	lld *aa = NULL;
 	for (int x = 0; x < 2; x++) { 
 		As[x] = new lld**[2]; 
 		for (int y = 0; y < 2; y++) { 
-			As[x][y] = AllocMatrix(adjN, adjL);
-			for (int i = 0; i < adjN; i++) { 
-				for (int j = 0; j < adjL; j++) { 
-					int I = i + (x & 1) * adjN; 
-					int J = j + (y & 1) * adjL; 
-					As[x][y][i][j] = (I < n && J < l) ? a[I][J] : 0; 
+			A = AllocMatrix(adjN, adjL);				
+			As[x][y] = A;			
+			aa = A[0];
+			int sx = x * adjN;
+			int ex = (x + 1) * adjN;
+			if( ex > n )
+				ex = n;
+
+			int sy = y * adjL;
+			int ey = (y + 1) * adjL;
+			int diff = ey - l;
+			if( diff < 0 )
+				diff = 0;
+
+			if( ey > l )
+				ey = l;
+
+			for (int i = sx; i < ex; i++) { 
+				for (int j = sy; j < ey; j++, aa++) { 
+					*aa = a[i][j]; 
 				} 
+				aa += diff;
 			} 
 		} 
 	} 
@@ -80,13 +101,28 @@ inline lld** Strassen(lld** a, lld** b, int n,
 	for (int x = 0; x < 2; x++) { 
 		Bs[x] = new lld**[2]; 
 		for (int y = 0; y < 2; y++) { 			
-			Bs[x][y] = AllocMatrix(adjL, adjM);
-			for (int i = 0; i < adjL; i++) { 				
-				for (int j = 0; j < adjM; j++) { 
-					int I = i + (x & 1) * adjL; 
-					int J = j + (y & 1) * adjM; 
-					Bs[x][y][i][j] = (I < l && J < m) ? b[I][J] : 0; 
+			A = AllocMatrix(adjL, adjM);				
+			Bs[x][y] = A;			
+			aa = A[0];
+			int sx = x * adjL;
+			int ex = (x + 1) * adjL;			
+			if( ex > l )
+				ex = l;
+
+			int sy = y * adjM;
+			int ey = (y + 1) * adjM;
+			int diff = ey - m;
+			if( diff < 0 )
+				diff = 0;
+
+			if( ey > m )
+				ey = m;
+
+			for (int i = sx; i < ex; i++) { 
+				for (int j = sy; j < ey; j++, aa++) { 
+					*aa = b[i][j]; 
 				} 
+				aa += diff;
 			} 
 		} 
 	} 
@@ -346,8 +382,8 @@ int main(int argc, char *argv[])
 		// anaylze cross over point
 		// standard: S(n) = p * n ^ 3
 		// Strassen: T(n) = 7 * T(n/2) + q * n ^2
-		int cross_over_point = getCrossOverPointAanlytically(5, 10);
-		printf("Therical Cross Over Point = %d\n", cross_over_point);
+		int cross_over_point = getCrossOverPointAanlytically(5, 20.0f);
+		printf("Therical Cross Over Point = %d\n\n\n", cross_over_point);
 
 		int cross_over_point1 = getCrossOverPointExperiemently();
 		printf("Experiement Cross Over Point = %d\n", cross_over_point);
