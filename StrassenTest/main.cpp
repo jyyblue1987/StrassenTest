@@ -10,7 +10,7 @@ typedef int lld;
 /* Strassen's Algorithm for matrix multiplication 
    Complexity:    O(n^2.808) */
 
-#define N_0 8
+#define N_0 256
 lld** AllocMatrix(int n, int m)
 {
 	lld *x = new lld[n * m];
@@ -240,7 +240,7 @@ double T_N(double n, double p, double q);
 
 double T_N(double n, double p, double q) 
 {
-	if(n <= 2)
+	if(n <= 2.0f)
 		return p * n * n;
 
 	return 7 * T_N(n/2, p, q) + q * n * n;
@@ -265,12 +265,12 @@ int getCrossOverPointAanlytically(double p, double q)
 	return n;
 }
   
-int getCrossOverPointExperiemently() 
+int getCrossOverPointExperiemently(int point) 
 {
-	int n = N_0;
+	int n = point - 100;
 	while(true)
 	{
-		n *= 2;
+		n += 10;
 
 		lld **A = AllocMatrix(n, n);
 		lld **B = AllocMatrix(n, n);
@@ -324,6 +324,53 @@ int getCrossOverPointExperiemently()
 	return n;
 }
 
+void testTrangleInRandomGraph() 
+{
+	int n = 1024;
+	double p = 0.2;
+
+	for(p = 0.01; p <= 0.05; p += 0.01)
+	{
+		lld **A = AllocMatrix(n, n);
+		double sum = 0;
+		int edge = 0;
+		for(int i = 0; i < n - 1; i++)
+		{
+			for(int j = i + 1; j < n; j++)
+			{
+				int d = (rand() % 10000) < p * 10000 ? 1 : 0;
+				A[i][j] = d;
+				A[j][i] = d;
+				sum += d;
+				edge++;
+			}
+		}
+
+		double prob = sum / edge;
+
+		lld** AA = Strassen(A, A, n, n, n);
+		lld** AAA = Strassen(AA, A, n, n, n);
+
+		// count number of triangule
+		int count = 0;
+		int diag_sum = 0;
+		for(int i = 0; i < n; i++)
+		{
+			diag_sum += AAA[i][i];
+		}
+		count = diag_sum / 6;
+
+		int expected_count = n * (n - 1) * (n - 2) * p * p * p / 6;
+		printf("P = %.2f, RealP = %.2f, Expected = %d, Real = %d\n", p, prob, expected_count, count);
+
+		FreeMatrix(A);
+		FreeMatrix(AA);
+		FreeMatrix(AAA);
+	}
+
+
+}
+
 int main(int argc, char *argv[]) 
 { 
 	if( argc > 3 && atoi(argv[1]) == 0 )
@@ -362,13 +409,15 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
+		testTrangleInRandomGraph();
+
 		// anaylze cross over point
 		// standard: S(n) = p * n ^ 3
 		// Strassen: T(n) = 7 * T(n/2) + q * n ^2
 		int cross_over_point = getCrossOverPointAanlytically(5, 20.0f);
 		printf("Therical Cross Over Point = %d\n\n\n", cross_over_point);
 
-		int cross_over_point1 = getCrossOverPointExperiemently();
+		int cross_over_point1 = getCrossOverPointExperiemently(cross_over_point);
 		printf("Experiement Cross Over Point = %d\n", cross_over_point1);
 
 		lld** matA = AllocMatrix(2, 3); 
@@ -395,7 +444,7 @@ int main(int argc, char *argv[])
 			printf("\n"); 
 		} 
 
-		// experiement about cross point
+		// Triangle in random graphs:
 		
 	}
   
