@@ -10,7 +10,7 @@ typedef int lld;
 /* Strassen's Algorithm for matrix multiplication 
    Complexity:    O(n^2.808) */
 
-
+#define N_0 2
 lld** AllocMatrix(int n, int m)
 {
 	lld *x = new lld[n * m];
@@ -70,7 +70,8 @@ inline void MatrixSubstract(lld *a, lld *b, lld *c, int n, int m)
 inline lld** Strassen(lld** a, lld** b, int n,  
                                 int l, int m) 
 { 
-    if (n == 1 || l == 1 || m == 1)  
+    if (n <= N_0 || l <= N_0 || m <= N_0 )  
+		//if (n == || l == 1 || m == 1)
         return MatrixMultiply(a, b, n, l, m); 
 
 	lld** c = AllocMatrix(n, m);
@@ -237,8 +238,8 @@ inline lld** Strassen(lld** a, lld** b, int n,
 
 int getCrossOverPointAanlytically(double p, double q) 
 {
-	int n = 1;
-	double s_n = p;
+	int n = N_0;
+	double s_n = p * N_0 * N_0 * N_0;
 	double t_n = s_n;
 	while(true) 
 	{
@@ -255,7 +256,7 @@ int getCrossOverPointAanlytically(double p, double q)
   
 int getCrossOverPointExperiemently() 
 {
-	int n = 1;
+	int n = N_0;
 	while(true)
 	{
 		n *= 2;
@@ -357,12 +358,9 @@ int main(int argc, char *argv[])
 		printf("Therical Cross Over Point = %d\n\n\n", cross_over_point);
 
 		int cross_over_point1 = getCrossOverPointExperiemently();
-		printf("Experiement Cross Over Point = %d\n", cross_over_point);
+		printf("Experiement Cross Over Point = %d\n", cross_over_point1);
 
-		lld** matA; 
-		matA = new lld*[2]; 
-		for (int i = 0; i < 2; i++) 
-			matA[i] = new lld[3]; 
+		lld** matA = AllocMatrix(2, 3); 
 		matA[0][0] = 1; 
 		matA[0][1] = 2; 
 		matA[0][2] = 3; 
@@ -370,10 +368,7 @@ int main(int argc, char *argv[])
 		matA[1][1] = 5; 
 		matA[1][2] = 6; 
   
-		lld** matB; 
-		matB = new lld*[3]; 
-		for (int i = 0; i < 3; i++) 
-			matB[i] = new lld[2]; 
+		lld** matB = AllocMatrix(3, 2); 
 		matB[0][0] = 7; 
 		matB[0][1] = 8; 
 		matB[1][0] = 9; 
@@ -384,7 +379,7 @@ int main(int argc, char *argv[])
 		lld** matC = Strassen(matA, matB, 2, 3, 2); 
 		for (int i = 0; i < 2; i++) { 
 			for (int j = 0; j < 2; j++) { 
-				printf("%lld ", matC[i][j]); 
+				printf("%d ", matC[i][j]); 
 			} 
 			printf("\n"); 
 		} 
