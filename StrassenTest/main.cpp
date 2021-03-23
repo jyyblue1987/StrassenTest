@@ -226,6 +226,24 @@ inline lld** Strassen(lld** a, lld** b, int n,
    
     return c; 
 } 
+
+int getCrossOverPointAanlytically(double p, double q) 
+{
+	int n = 1;
+	double s_n = p;
+	double t_n = s_n;
+	while(true) 
+	{
+		n *= 2;
+		t_n = 7 * t_n + q * n * n;
+		s_n = p * n * n * n;
+
+		if( t_n < s_n )	// cross over point
+			break;
+	}
+
+	return n;
+}
   
 int main(int argc, char *argv[]) 
 { 
@@ -265,6 +283,12 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
+		// anaylze cross over point
+		// standard: S(n) = p * n ^ 3
+		// Strassen: T(n) = 7 * T(n/2) + q * n ^2
+		int cross_over_point = getCrossOverPointAanlytically(5, 10);
+		printf("Therical Cross Over Point = %d\n", cross_over_point);
+
 		lld** matA; 
 		matA = new lld*[2]; 
 		for (int i = 0; i < 2; i++) 
