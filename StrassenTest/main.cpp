@@ -326,8 +326,37 @@ int getCrossOverPointExperiemently(int point)
 
 void testTrangleInRandomGraph() 
 {
+	// Triangle in random graphs:
+	int adj[][4] = {{0, 1, 1, 0},  
+	{1, 0, 1, 1},  
+	{1, 1, 0, 1},  
+	{0, 1, 1, 0}};
+
+	lld **B = AllocMatrix(4, 4);
+	for(int i = 0; i < 4; i++)
+		for(int j = 0; j < 4; j++)
+			B[i][j] = adj[i][j];
+
+	lld** BB = Strassen(B, B, 4, 4, 4);
+	lld** BBB = Strassen(BB, B, 4, 4, 4);
+
+	int diag_sum1 = 0;
+	for(int i = 0; i < 4; i++)
+	{
+		diag_sum1 += BBB[i][i];
+	}
+	int count1 = diag_sum1 / 6;
+	
+	FreeMatrix(B);
+	FreeMatrix(BB);
+	FreeMatrix(BBB);
+
+
+
 	int n = 1024;
 	double p = 0.2;
+
+	srand(clock());
 
 	for(p = 0.01; p <= 0.05; p += 0.01)
 	{
@@ -444,8 +473,8 @@ int main(int argc, char *argv[])
 			printf("\n"); 
 		} 
 
-		// Triangle in random graphs:
-		
+
+
 	}
   
     return 0; 
