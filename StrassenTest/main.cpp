@@ -296,6 +296,7 @@ int getCrossOverPointExperiemently()
 		FreeMatrix(A);
 		FreeMatrix(B);
 
+		printf("n = %d: Strassen = %dms, Standard = %dms\n", n, et1 - st1, et - st);
 		if( et1 - st1 + 100 < et - st )	// cross over point
 			break;
 
