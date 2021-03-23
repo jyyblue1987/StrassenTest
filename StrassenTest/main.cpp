@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 using namespace std; 
 typedef long long lld; 
   
@@ -234,37 +234,84 @@ inline lld** Strassen(lld** a, lld** b, int n,
     return c; 
 } 
   
-int main() 
+int main(int argc, char *argv[]) 
 { 
-    lld** matA; 
-    matA = new lld*[2]; 
-    for (int i = 0; i < 2; i++) 
-        matA[i] = new lld[3]; 
-    matA[0][0] = 1; 
-    matA[0][1] = 2; 
-    matA[0][2] = 3; 
-    matA[1][0] = 4; 
-    matA[1][1] = 5; 
-    matA[1][2] = 6; 
+	if( argc > 3 && atoi(argv[1]) == 0 )
+	{
+		int n = atoi(argv[2]);
+
+		lld** matA; 
+		matA = new lld*[n]; 
+		for (int i = 0; i < n; i++) 
+			matA[i] = new lld[n]; 
+
+		lld** matB; 
+		matB = new lld*[n]; 
+		for (int i = 0; i < n; i++) 
+			matB[i] = new lld[n]; 
+
+		// read file
+		char * line = NULL;
+		size_t len = 0;
+		int read = 0;
+
+		FILE *fp = fopen(argv[3], "rt");
+		if( fp == NULL )
+			return -1;
+
+		for(int i = 0; i < n; i++)
+			for(int j = 0; j < n; j++)
+				fscanf(fp, "%d\n", &(matA[i][j]));
+
+		for(int i = 0; i < n; i++)
+			for(int j = 0; j < n; j++)
+				fscanf(fp, "%d\n", &(matB[i][j]));
+		fclose(fp);
+
+		lld** matC = Strassen(matA, matB, n, n, n); 
+
+		for(int i = 0; i < n; i++)
+			printf("%d\n", matC[i][i]);
+
+		for(int i = 0; i < n; i++)
+		{
+			delete matA[i];
+			delete matB[i];
+			delete matC[i];
+		}
+	}
+	else
+	{
+		lld** matA; 
+		matA = new lld*[2]; 
+		for (int i = 0; i < 2; i++) 
+			matA[i] = new lld[3]; 
+		matA[0][0] = 1; 
+		matA[0][1] = 2; 
+		matA[0][2] = 3; 
+		matA[1][0] = 4; 
+		matA[1][1] = 5; 
+		matA[1][2] = 6; 
   
-    lld** matB; 
-    matB = new lld*[3]; 
-    for (int i = 0; i < 3; i++) 
-        matB[i] = new lld[2]; 
-    matB[0][0] = 7; 
-    matB[0][1] = 8; 
-    matB[1][0] = 9; 
-    matB[1][1] = 10; 
-    matB[2][0] = 11; 
-    matB[2][1] = 12; 
+		lld** matB; 
+		matB = new lld*[3]; 
+		for (int i = 0; i < 3; i++) 
+			matB[i] = new lld[2]; 
+		matB[0][0] = 7; 
+		matB[0][1] = 8; 
+		matB[1][0] = 9; 
+		matB[1][1] = 10; 
+		matB[2][0] = 11; 
+		matB[2][1] = 12; 
   
-    lld** matC = Strassen(matA, matB, 2, 3, 2); 
-    for (int i = 0; i < 2; i++) { 
-        for (int j = 0; j < 2; j++) { 
-            printf("%lld ", matC[i][j]); 
-        } 
-        printf("\n"); 
-    } 
+		lld** matC = Strassen(matA, matB, 2, 3, 2); 
+		for (int i = 0; i < 2; i++) { 
+			for (int j = 0; j < 2; j++) { 
+				printf("%lld ", matC[i][j]); 
+			} 
+			printf("\n"); 
+		} 
+	}
   
     return 0; 
 } 
