@@ -1,35 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h> 
 using namespace std; 
 typedef int lld; 
   
 /* Strassen's Algorithm for matrix multiplication 
    Complexity:    O(n^2.808) */
-  
-inline lld** MatrixMultiply(lld** a, lld** b, int n, 
-                                      int l, int m) 
-{ 
-    lld** c = new lld*[n]; 
-    for (int i = 0; i < n; i++) 
-        c[i] = new lld[m]; 
 
-	lld sum = 0;
-
-	lld *aa = NULL;
-	lld *bb = NULL;
-  
-    for (int i = 0; i < n; i++) { 
-		aa = a[i];
-        for (int j = 0; j < m; j++) { 
-            sum = 0; 			
-			bb = b[0] + j;
-            for (int k = 0; k < l; k++, aa++, bb+=m)
-                sum += (*aa) * (*bb); 
-			c[i][j] = sum; 
-        } 
-    } 
-    return c; 
-} 
 
 lld** AllocMatrix(int n, int m)
 {
@@ -47,6 +24,30 @@ void FreeMatrix(lld **p)
 	delete p[0];
 	delete p;
 }
+  
+inline lld** MatrixMultiply(lld** a, lld** b, int n, 
+                                      int l, int m) 
+{ 
+    lld** c = AllocMatrix(n, m);
+
+	lld sum = 0;
+
+	lld *aa = NULL;
+	lld *bb = NULL;
+  
+    for (int i = 0; i < n; i++) { 
+		for (int j = 0; j < m; j++) { 
+            sum = 0; 			
+			aa = a[i];
+			bb = b[0] + j;
+            for (int k = 0; k < l; k++, aa++, bb+=m)
+                sum += (*aa) * (*bb); 				
+			c[i][j] = sum; 
+        } 
+    } 
+    return c; 
+} 
+
   
 inline lld** Strassen(lld** a, lld** b, int n,  
                                 int l, int m) 
@@ -245,6 +246,64 @@ int getCrossOverPointAanlytically(double p, double q)
 	return n;
 }
   
+int getCrossOverPointExperiemently() 
+{
+	int n = 1;
+	while(true)
+	{
+		n *= 2;
+
+		lld **A = AllocMatrix(n, n);
+		lld **B = AllocMatrix(n, n);
+
+		for(int i = 0; i < n; i++)
+		{
+			for(int j = 0; j < n; j++)
+			{
+				A[i][j] = rand() % 2;
+				B[i][j] = rand() % 2;
+			}
+		}
+
+		clock_t st = clock(); 
+		lld **C_S = MatrixMultiply(A, B, n, n, n);
+		clock_t et = clock(); 
+		
+		clock_t st1 = clock(); 
+		lld **C_T = Strassen(A, B, n, n, n);
+		clock_t et1 = clock(); 
+
+		// check result is same
+		bool flag = false;
+		for(int i = 0; i < n; i++)
+		{
+			for(int j = 0; j < n; j++)
+			{
+				if( C_S[i][j] != C_T[i][j] )
+				{
+					flag = true;
+					break;
+				}
+
+			}
+		}
+		if( flag == true )
+			printf("Result is different\n");
+
+		FreeMatrix(C_S);
+		FreeMatrix(C_T);
+
+		FreeMatrix(A);
+		FreeMatrix(B);
+
+		if( et1 - st1 + 100 < et - st )	// cross over point
+			break;
+
+	}
+
+	return n;
+}
+
 int main(int argc, char *argv[]) 
 { 
 	if( argc > 3 && atoi(argv[1]) == 0 )
@@ -289,6 +348,9 @@ int main(int argc, char *argv[])
 		int cross_over_point = getCrossOverPointAanlytically(5, 10);
 		printf("Therical Cross Over Point = %d\n", cross_over_point);
 
+		int cross_over_point1 = getCrossOverPointExperiemently();
+		printf("Experiement Cross Over Point = %d\n", cross_over_point);
+
 		lld** matA; 
 		matA = new lld*[2]; 
 		for (int i = 0; i < 2; i++) 
@@ -318,6 +380,9 @@ int main(int argc, char *argv[])
 			} 
 			printf("\n"); 
 		} 
+
+		// experiement about cross point
+		
 	}
   
     return 0; 
