@@ -14,12 +14,17 @@ inline lld** MatrixMultiply(lld** a, lld** b, int n,
         c[i] = new lld[m]; 
 
 	lld sum = 0;
+
+	lld *aa = NULL;
+	lld *bb = NULL;
   
     for (int i = 0; i < n; i++) { 
+		aa = a[i];
         for (int j = 0; j < m; j++) { 
-            sum = 0; 
-            for (int k = 0; k < l; k++)
-                sum += a[i][k] * b[k][j]; 
+            sum = 0; 			
+			bb = b[0] + j;
+            for (int k = 0; k < l; k++, aa++, bb+=m)
+                sum += (*aa) * (*bb); 
 			c[i][j] = sum; 
         } 
     } 
