@@ -68,6 +68,8 @@ inline lld** Strassen(lld** a, lld** b, int n,
 	lld**** As = new lld***[2]; 
 	lld **A = NULL;
 	lld *aa = NULL;
+	int len = 0;
+	
 	for (int x = 0; x < 2; x++) { 
 		As[x] = new lld**[2]; 
 		for (int y = 0; y < 2; y++) { 
@@ -81,18 +83,15 @@ inline lld** Strassen(lld** a, lld** b, int n,
 
 			int sy = y * adjL;
 			int ey = (y + 1) * adjL;
-			int diff = ey - l;
-			if( diff < 0 )
-				diff = 0;
-
+	
 			if( ey > l )
 				ey = l;
 
-			for (int i = sx; i < ex; i++) { 
-				for (int j = sy; j < ey; j++, aa++) { 
-					*aa = a[i][j]; 
-				} 
-				aa += diff;
+			len = ey - sy;
+
+			for (int i = sx; i < ex; i++) { 				
+				memcpy(aa, a[i] + sy, sizeof(lld) * len);
+				aa += adjL;
 			} 
 		} 
 	} 
@@ -111,18 +110,15 @@ inline lld** Strassen(lld** a, lld** b, int n,
 
 			int sy = y * adjM;
 			int ey = (y + 1) * adjM;
-			int diff = ey - m;
-			if( diff < 0 )
-				diff = 0;
-
+		
 			if( ey > m )
 				ey = m;
 
+			len = ey - sy;
+
 			for (int i = sx; i < ex; i++) { 
-				for (int j = sy; j < ey; j++, aa++) { 
-					*aa = b[i][j]; 
-				} 
-				aa += diff;
+				memcpy(aa, b[i] + sy, sizeof(lld) * len);
+				aa += adjM;
 			} 
 		} 
 	} 
