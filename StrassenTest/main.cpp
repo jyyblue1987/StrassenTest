@@ -10,7 +10,7 @@ typedef int lld;
 /* Strassen's Algorithm for matrix multiplication 
    Complexity:    O(n^2.808) */
 
-#define N_0 256
+#define N_0 16
 lld** AllocMatrix(int n, int m)
 {
 	lld *x = new lld[n * m];
@@ -55,14 +55,14 @@ inline lld** MatrixMultiply(lld** a, lld** b, int n,
 inline void MatrixAdd(lld *a, lld *b, lld *c, int n, int m)
 {
 	int len = n * m;
-	for(int i = 0; i < len; i++, a++, b++, c++)
+	for(int i = 0; i < len; i++, a++, b++, c++)	//n submatrix calculate state, avoid the index addition operation to use pointer
 		*c = *a + *b;
 }
 
 inline void MatrixSubstract(lld *a, lld *b, lld *c, int n, int m)
 {
 	int len = n * m;
-	for(int i = 0; i < len; i++, a++, b++, c++)
+	for(int i = 0; i < len; i++, a++, b++, c++) //n submatrix calculate state, avoid the index addition operation to use pointer
 		*c = *a - *b;
 }
 
@@ -74,6 +74,8 @@ inline lld** Strassen(lld** a, lld** b, int n,
 		//if (n == || l == 1 || m == 1)
         return MatrixMultiply(a, b, n, l, m); 
 
+
+	// Split step - 2 * n ^ 2
 	lld** c = AllocMatrix(n, m);
 
 	int adjN = (n >> 1) + (n & 1); 
@@ -138,6 +140,7 @@ inline lld** Strassen(lld** a, lld** b, int n,
 		} 
 	} 
 
+	// sub caculate - 10 * 5 * n ^ 2 / 4
 	lld*** s = new lld**[10]; 
 	for (int i = 0; i < 10; i++) { 
 		switch (i) { 
@@ -184,6 +187,7 @@ inline lld** Strassen(lld** a, lld** b, int n,
 		} 
 	} 
 
+	// recurisve calls for sub matrix - 7 * T(n/2)
 	lld*** p = new lld**[7]; 
 	p[0] = Strassen(As[0][0], s[0], adjN, adjL, adjM); 
 	p[1] = Strassen(s[1], Bs[1][1], adjN, adjL, adjM); 
@@ -193,6 +197,7 @@ inline lld** Strassen(lld** a, lld** b, int n,
 	p[5] = Strassen(s[6], s[7], adjN, adjL, adjM); 
 	p[6] = Strassen(s[8], s[9], adjN, adjL, adjM); 
 
+	// reconstruction - 15 * n ^ 2 / 4  
 	lld *p0 = p[0][0], *p1 = p[1][0], *p2 = p[2][0], *p3 = p[3][0], *p4 = p[4][0], *p5 = p[5][0], *p6 = p[6][0];
 	for (int i = 0; i < adjN; i++) { 
 		for (int j = 0; j < adjM; j++, p0++, p1++, p2++, p3++, p4++, p5++, p6++) { 
@@ -279,8 +284,8 @@ int getCrossOverPointExperiemently(int point)
 		{
 			for(int j = 0; j < n; j++)
 			{
-				A[i][j] = rand() % 2;
-				B[i][j] = rand() % 2;
+				A[i][j] = rand() % 3;
+				B[i][j] = rand() % 3;
 			}
 		}
 
@@ -358,7 +363,7 @@ void testTrangleInRandomGraph()
 
 	srand(clock());
 
-	for(p = 0.01; p <= 0.05; p += 0.01)
+	for(p = 0.01; p <= 0.05; p += 0.01) // change probability
 	{
 		lld **A = AllocMatrix(n, n);
 		double sum = 0;
@@ -375,6 +380,7 @@ void testTrangleInRandomGraph()
 			}
 		}
 
+		// calculate the real probabilty or 
 		double prob = sum / edge;
 
 		lld** AA = Strassen(A, A, n, n, n);
@@ -402,7 +408,7 @@ void testTrangleInRandomGraph()
 
 int main(int argc, char *argv[]) 
 { 
-	if( argc > 3 && atoi(argv[1]) == 0 )
+	if( argc > 3 && atoi(argv[1]) == 0 ) // this part will be executed by tester program
 	{
 		int n = atoi(argv[2]);
 
@@ -438,16 +444,16 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		testTrangleInRandomGraph();
+		// testTrangleInRandomGraph();
 
 		// anaylze cross over point
 		// standard: S(n) = p * n ^ 3
 		// Strassen: T(n) = 7 * T(n/2) + q * n ^2
 		int cross_over_point = getCrossOverPointAanlytically(5, 20.0f);
-		printf("Therical Cross Over Point = %d\n\n\n", cross_over_point);
+		printf("Analytical Cross Over Point = %d\n\n\n", cross_over_point);
 
 		int cross_over_point1 = getCrossOverPointExperiemently(cross_over_point);
-		printf("Experiement Cross Over Point = %d\n", cross_over_point1);
+		printf("Experimental Cross Over Point = %d\n", cross_over_point1);
 
 		lld** matA = AllocMatrix(2, 3); 
 		matA[0][0] = 1; 
