@@ -236,15 +236,26 @@ inline lld** Strassen(lld** a, lld** b, int n,
     return c; 
 } 
 
+double T_N(double n, double p, double q);
+
+double T_N(double n, double p, double q) 
+{
+	if(n <= N_0)
+		return p * n * n;
+
+	return 7 * T_N(n/2, p, q) + q * n * n;
+}
+
 int getCrossOverPointAanlytically(double p, double q) 
 {
 	int n = N_0;
 	double s_n = p * N_0 * N_0 * N_0;
 	double t_n = s_n;
+
 	while(true) 
 	{
-		n *= 2;
-		t_n = 7 * t_n + q * n * n;
+		n += 2;
+		t_n = T_N(n, p, q);
 		s_n = p * n * n * n;
 
 		if( t_n < s_n )	// cross over point
