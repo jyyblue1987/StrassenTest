@@ -52,6 +52,20 @@ inline lld** MatrixMultiply(lld** a, lld** b, int n,
     return c; 
 } 
 
+inline void MatrixAdd(lld *a, lld *b, lld *c, int n, int m)
+{
+	int len = n * m;
+	for(int i = 0; i < len; i++, a++, b++, c++)
+		*c = *a + *b;
+}
+
+inline void MatrixSubstract(lld *a, lld *b, lld *c, int n, int m)
+{
+	int len = n * m;
+	for(int i = 0; i < len; i++, a++, b++, c++)
+		*c = *a - *b;
+}
+
   
 inline lld** Strassen(lld** a, lld** b, int n,  
                                 int l, int m) 
@@ -128,83 +142,43 @@ inline lld** Strassen(lld** a, lld** b, int n,
 		switch (i) { 
 		case 0: 			
 			s[i] = AllocMatrix(adjL, adjM);
-			for (int j = 0; j < adjL; j++) { 				
-				for (int k = 0; k < adjM; k++) { 
-					s[i][j][k] = Bs[0][1][j][k] - Bs[1][1][j][k]; 
-				} 
-			} 
+			MatrixSubstract(Bs[0][1][0], Bs[1][1][0], s[i][0], adjL, adjM);			
 			break; 
 		case 1: 			
 			s[i] = AllocMatrix(adjN, adjL);
-			for (int j = 0; j < adjN; j++) { 				
-				for (int k = 0; k < adjL; k++) { 
-					s[i][j][k] = As[0][0][j][k] + As[0][1][j][k]; 
-				} 
-			} 
+			MatrixAdd(As[0][0][0], As[0][1][0], s[i][0], adjN, adjL);			 
 			break; 
 		case 2: 			
 			s[i] = AllocMatrix(adjN, adjL);
-			for (int j = 0; j < adjN; j++) { 				
-				for (int k = 0; k < adjL; k++) { 
-					s[i][j][k] = As[1][0][j][k] + As[1][1][j][k]; 
-				} 
-			} 
+			MatrixAdd(As[1][0][0], As[1][1][0], s[i][0], adjN, adjL);			  
 			break; 
 		case 3: 
 			s[i] = AllocMatrix(adjL, adjM);
-			for (int j = 0; j < adjL; j++) { 				
-				for (int k = 0; k < adjM; k++) { 
-					s[i][j][k] = Bs[1][0][j][k] - Bs[0][0][j][k]; 
-				} 
-			} 
+			MatrixSubstract(Bs[1][0][0], Bs[0][0][0], s[i][0], adjL, adjM);			
 			break; 
 		case 4: 
 			s[i] = AllocMatrix(adjN, adjL);			
-			for (int j = 0; j < adjN; j++) { 				
-				for (int k = 0; k < adjL; k++) { 
-					s[i][j][k] = As[0][0][j][k] + As[1][1][j][k]; 
-				} 
-			} 
+			MatrixAdd(As[0][0][0], As[1][1][0], s[i][0], adjN, adjL);			  
 			break; 
 		case 5: 
 			s[i] = AllocMatrix(adjL, adjM);			
-			for (int j = 0; j < adjL; j++) { 				
-				for (int k = 0; k < adjM; k++) { 
-					s[i][j][k] = Bs[0][0][j][k] + Bs[1][1][j][k]; 
-				} 
-			} 
+			MatrixAdd(Bs[0][0][0], Bs[1][1][0], s[i][0], adjL, adjM);			 
 			break; 
 		case 6: 
 			s[i] = AllocMatrix(adjN, adjL);			
-			for (int j = 0; j < adjN; j++) { 
-				for (int k = 0; k < adjL; k++) { 
-					s[i][j][k] = As[0][1][j][k] - As[1][1][j][k]; 
-				} 
-			} 
+			MatrixSubstract(As[0][1][0], As[1][1][0], s[i][0], adjN, adjL);			  
 			break; 
 		case 7: 
 			s[i] = AllocMatrix(adjL, adjM);			
-			for (int j = 0; j < adjL; j++) { 
-				for (int k = 0; k < adjM; k++) { 
-					s[i][j][k] = Bs[1][0][j][k] + Bs[1][1][j][k]; 
-				} 
-			} 
+			MatrixAdd(Bs[1][0][0], Bs[1][1][0], s[i][0], adjL, adjM);			 
 			break; 
 		case 8: 
 			s[i] = AllocMatrix(adjN, adjL);			
-			for (int j = 0; j < adjN; j++) { 
-				for (int k = 0; k < adjL; k++) { 
-					s[i][j][k] = As[0][0][j][k] - As[1][0][j][k]; 
-				} 
-			} 
+			MatrixSubstract(As[0][0][0], As[1][0][0], s[i][0], adjN, adjL);			  
 			break; 
 		case 9: 			
 			s[i] = AllocMatrix(adjL, adjM);		
-			for (int j = 0; j < adjL; j++) { 
-				for (int k = 0; k < adjM; k++) { 
-					s[i][j][k] = Bs[0][0][j][k] + Bs[0][1][j][k]; 
-				} 
-			} 
+			MatrixAdd(Bs[0][0][0], Bs[0][1][0], s[i][0], adjL, adjM);			  
 			break; 
 		} 
 	} 
@@ -218,15 +192,16 @@ inline lld** Strassen(lld** a, lld** b, int n,
 	p[5] = Strassen(s[6], s[7], adjN, adjL, adjM); 
 	p[6] = Strassen(s[8], s[9], adjN, adjL, adjM); 
 
+	lld *p0 = p[0][0], *p1 = p[1][0], *p2 = p[2][0], *p3 = p[3][0], *p4 = p[4][0], *p5 = p[5][0], *p6 = p[6][0];
 	for (int i = 0; i < adjN; i++) { 
-		for (int j = 0; j < adjM; j++) { 
-			c[i][j] = p[4][i][j] + p[3][i][j] - p[1][i][j] + p[5][i][j]; 
+		for (int j = 0; j < adjM; j++, p0++, p1++, p2++, p3++, p4++, p5++, p6++) { 
+			c[i][j] = *p4 + *p3 - *p1 + *p5; 
 			if (j + adjM < m) 
-				c[i][j + adjM] = p[0][i][j] + p[1][i][j]; 
+				c[i][j + adjM] = *p0 + *p1; 
 			if (i + adjN < n) 
-				c[i + adjN][j] = p[2][i][j] + p[3][i][j]; 
+				c[i + adjN][j] = *p2 + *p3;
 			if (i + adjN < n && j + adjM < m) 
-				c[i + adjN][j + adjM] = p[4][i][j] + p[0][i][j] - p[2][i][j] - p[6][i][j]; 
+				c[i + adjN][j + adjM] = *p4 + *p0 - *p2 - *p6;
 		} 
 	} 
 
